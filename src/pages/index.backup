@@ -1,0 +1,99 @@
+import { useEffect, useState } from 'react';
+import { createClient } from "postchain-client";
+
+
+
+const Home = () => {
+
+  const  [xposts, setXposts] = useState();;
+  useEffect(() => {
+    const initSession = async () => {
+      console.log("Initializing Session");
+      
+      // 1. Initialize Client
+      const client = await createClient({
+        nodeUrlPool: "http://localhost:7740",
+        blockchainRid: "78C96404C03E6E10F6216ED8C3651475BCD12B2A806081FF924CB726B5390442",
+      });
+
+      // Use the correct client instance for querying
+      try {
+        const posts = await client.query("get_all_posts", {"pointer":1});
+        setXposts(posts);
+        console.log(xposts);
+      } catch (error) {
+        console.error("Query error:", error);
+      }
+    };
+
+    initSession().catch(console.error);
+  }, []);
+
+  return (
+    <div style={styles.container}>
+      <header style={styles.header}>
+        <h1>X | Twitter</h1>
+      </header>
+
+      <div>
+        <h5> create new post </h5>
+        <textarea  style={styles.makepost} maxLength="255">
+
+        </textarea>
+        <input style={styles.button} value="Submit post" type="button" />
+      </div>
+      {xposts ? (<> {xposts.posts.map((post)=> (
+        <div>
+          <div style={styles.username}>{post.user.name}</div>
+          <div style={styles.content}>{post.content}</div>
+          
+        </div>
+      ))}</>) : "Loading ..." }
+    </div>
+  );
+};
+
+const styles = {
+  button:{
+    backgroundColor:'skyblue',
+    color:'white',
+    padding:10,
+    borderColor: 'transparent',
+    borderRadius:'3%',
+  },
+  makepost:{
+    width:500,
+    height:100
+  },
+  username: {
+    backgroundColor: 'yellow',
+
+    padding: '5px', // Added padding for better appearance
+    color: 'black',
+    width:'50px',
+    fontWeight: 'bold', // Optional: makes the username stand out
+  },
+  content: {
+    color: 'red',
+    backgroundColor:'black',
+    textAlign:'left',
+    padding:50,
+  },
+  container: {
+    margin: 0,
+    padding: 0,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    textAlign: 'center',
+  },
+  header: {
+    backgroundColor: '#f0f0f0',
+    padding: '20px',
+    borderBottom: '1px solid #ccc',
+  },
+  title: {
+    color: 'blue',
+    marginTop: '20px',
+  },
+};
+
+export default Home;
